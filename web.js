@@ -2,6 +2,8 @@ var express = require('express');
 var fs = require('fs');
 var util = require('util');
 
+express.static.mime.define({'application/javascript': ['pjs']});
+
 var app = express();
 
 app.use(express.static(__dirname + '/public'));
