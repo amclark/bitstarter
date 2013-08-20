@@ -3,6 +3,50 @@
 //paper.setup('canvas');
 //var tool = new Tool();
 
+(function () {
+
+var CANVAS_OFFSET = new Point(200, 0);
+var activeText;
+
+$('#menu-btn-add-shape').click(createAddShapeDialog);
+$('#menu-btn-add-text').click(function () {
+    clearSelection();
+    $('#text-form').val('');
+    $('#add-text').removeClass('hidden');
+    $('#text-form').focus();
+    activeText = new PointText(new Point(300, 300));
+    activeText.content = '   ';
+    activeText.style = {fontSize: 20};
+    activeText.strokeColor = 'black';
+    activeText.sui_index = nextIndex;
+    nextIndex++;
+    select(activeText);
+});
+$('#text-form').keyup(function () {
+    if (activeText) {
+        console.log(group.bounds);
+        activeText.content = $('#text-form').val() || '   ';
+        resizeGroupBoundary();
+        // this seems kind of hacky, is there a better way to get the text to refresh?
+        view.draw();
+    }
+});
+$('#btn-add-text-done').click(function () {
+    $('#add-text').addClass('hidden');
+    refreshMenu();
+});
+$('#menu-btn-group').click(groupUngroup);
+$('#menu-btn-remove').click(remove);
+$('#menu-btn-edit').click(function () {
+    console.log(group.strokeColor);
+});
+$('#menu-btn-settings').click(function () {
+    
+});
+$('#input-color').change(function () {
+    group.strokeColor = $('#input-color').val();
+});
+
 var values = {
     paths: 50,
     minRadius: 30,
@@ -68,11 +112,9 @@ Hammer(view.element).on('pinchin', function(event) {
 }).on('dragstart', function(event) {
     if (pinching) return;
 
-    var point = new Point(event.gesture.center.pageX, event.gesture.center.pageY);
+    var point = new Point(event.gesture.center.pageX, event.gesture.center.pageY) - CANVAS_OFFSET;
     if (dialog) {
         checkDialogGesture(point, 'dragstart');
-        return;
-    } else if (menuGroup.hitTest(point, hitOptions)) {
         return;
     }
 
@@ -90,7 +132,7 @@ Hammer(view.element).on('pinchin', function(event) {
     }
     hitResult = project.hitTest(point, hitOptions);
     if (hitResult) {
-        if (hitResult.type === 'fill' && !hitResult.item.sui_menu) {
+        if (hitResult.type === 'fill') {
             select(hitResult.item);
             movePath = true;
         }
@@ -98,7 +140,7 @@ Hammer(view.element).on('pinchin', function(event) {
         dragView = true;
     }
 }).on('drag', function(event) {
-    var point = new Point(event.gesture.center.pageX, event.gesture.center.pageY);
+    var point = new Point(event.gesture.center.pageX, event.gesture.center.pageY) - CANVAS_OFFSET;
     var delta = new Point(event.gesture.deltaX - prevDelta.x,
                           event.gesture.deltaY - prevDelta.y);
 
@@ -139,63 +181,13 @@ Hammer(view.element).on('pinchin', function(event) {
     prevDelta.x = prevDelta.y = 0;
 }).on('tap', function(event) {
     path = resize = movePath = dragView = null;
-    var point = new Point(event.gesture.center.pageX, event.gesture.center.pageY);
+    var point = new Point(event.gesture.center.pageX, event.gesture.center.pageY) - CANVAS_OFFSET;
     var i;
     if (dialog) {
         checkDialogGesture(point, 'tap');
-        return true;
-    }
-    var hitResult = menuGroup.hitTest(point, hitOptions);
-    if (hitResult) {
-        // Menu
-        if (menuTest(1, point)) {
-            if (group && group.children.length === 1 && group.children[0].sui_group) {
-                // Ungroup
-                group.addChildren(group.children[0].removeChildren());
-                clearSelection();
-            } else if (group && group.children.length >= 2) {
-                // Group
-                var newGroup = new Group(group.removeChildren());
-                newGroup.sui_index = group.sui_index;
-                newGroup.sui_group = true;
-                group.addChild(newGroup);
-            }
-        } else if (menuTest(2, point)) {
-            // Add shape
-            clearSelection();
-            createDialogGrid(new Point(100, 100), new Point(600, 600), 100);
-            var shapes = [[new Path.Rectangle(new Point(110, 110), new Point(190, 190), 10), 0],
-                          [new Path.Rectangle(new Point(210, 110), new Point(290, 190)), 0],
-                          [new Path.Circle(new Point(350, 150), 40), 0],
-                          [new Path.RegularPolygon(new Point(450, 160), 3, 45), 0],
-                          [new Path.RegularPolygon(new Point(550, 153), 5, 40), 0],
-                          [new Path.RegularPolygon(new Point(150, 250), 6, 40), 30],
-                          [new Path.RegularPolygon(new Point(250, 250), 8, 40), 0],
-                          // Ratio of inner radius to outer for 5 pt star, 1 : 0.5*(3+sqrt(5))
-                          [new Path.Star(new Point(350, 250), 5, 15, 15*0.5*(3+Math.sqrt(5))), 36],
-                          [new Path.Star(new Point(450, 250), 6, 25, 25*Math.sqrt(3)), 30],
-                          ];
-            for (i = 0; i < shapes.length; i++) {
-                var shape = shapes[i][0], angle = shapes[i][1];
-                shape.fillColor = '#ffffff';
-                shape.strokeWidth = 2;
-                shape.strokeColor = 'black';
-                if (angle) {
-                    shape.rotate(angle);
-                }
-                shape.sui_handler = selectShape.bind(shape);
-                dialog.addChild(shape);
-            }
-        } else if (menuTest(3, point)) {
-            // Edit selected item(s)
-            if (group.children.length) {
-                createDialogGrid(new Point(100, 100), new Point(300, 400), 100);
-            }
-        }
         return;
     }
-    var hitResult;
-    hitResult = project.hitTest(point, hitOptions);
+    var hitResult = project.hitTest(point, hitOptions);
     if (hitResult) {
         if (hitResult.type === 'fill' && !hitResult.item.sui_menu) {
             select(hitResult.item);
@@ -206,6 +198,50 @@ Hammer(view.element).on('pinchin', function(event) {
 }).on('release', function(event) {
     pinching = null;
 });
+
+function groupUngroup() {
+    if (group && group.children.length === 1 && group.children[0].sui_group) {
+        // Ungroup
+        group.addChildren(group.children[0].removeChildren());
+        clearSelection();
+    } else if (group && group.children.length >= 2) {
+        // Group
+        var newGroup = new Group(group.removeChildren());
+        newGroup.sui_index = group.sui_index;
+        newGroup.sui_group = true;
+        group.addChild(newGroup);
+        $('#menu-btn-group').text('Ungroup');
+    }
+}
+
+function createAddShapeDialog() {
+    if (dialog) return;
+    clearSelection();
+    createDialogGrid(new Point(100, 100), new Point(600, 600), 100);
+    var shapes = [[new Path.Rectangle(new Point(110, 110), new Point(190, 190), 10), 0],
+                  [new Path.Rectangle(new Point(210, 110), new Point(290, 190)), 0],
+                  [new Path.Circle(new Point(350, 150), 40), 0],
+                  [new Path.RegularPolygon(new Point(450, 160), 3, 45), 0],
+                  [new Path.RegularPolygon(new Point(550, 153), 5, 40), 0],
+                  [new Path.RegularPolygon(new Point(150, 250), 6, 40), 30],
+                  [new Path.RegularPolygon(new Point(250, 250), 8, 40), 0],
+                  // Ratio of inner radius to outer for 5 pt star, 1 : 0.5*(3+sqrt(5))
+                  [new Path.Star(new Point(350, 250), 5, 15, 15*0.5*(3+Math.sqrt(5))), 36],
+                  [new Path.Star(new Point(450, 250), 6, 25, 25*Math.sqrt(3)), 30]
+                  ];
+    for (i = 0; i < shapes.length; i++) {
+        var shape = shapes[i][0], angle = shapes[i][1];
+        shape.fillColor = '#ffffff';
+        shape.strokeWidth = 2;
+        shape.strokeColor = 'black';
+        if (angle) {
+            shape.rotate(angle);
+        }
+        shape.sui_handler = selectShape.bind(shape);
+        dialog.addChild(shape);
+    }
+    refreshMenu();
+}
 
 function createDialogGrid(from, to, itemWidth) {
     var path = new Path.Rectangle(from, to, 10),
@@ -248,8 +284,7 @@ function selectShape(type) {
     this.sui_index = nextIndex;
     nextIndex += 1;
     select(this);
-    dialog.remove();
-    dialog = null;
+    closeDialog();
     if (type == 'dragstart')
         movePath = true;
 }
@@ -257,6 +292,7 @@ function selectShape(type) {
 function closeDialog() {
     dialog.remove();
     dialog = null;
+    refreshMenu();
 }
 
 function menuTest(index, point) {
@@ -275,7 +311,8 @@ function select(item) {
             index = i;
         }
     }
-    item.remove()
+    item.remove();
+    group.matrix.set(1, 0, 0, 1, 0, 0);  // somehow this can still be set from the last drag
     group.insertChild(index, item);
     group.sui_index = group.children[0].sui_index;
     group.remove();
@@ -287,6 +324,12 @@ function select(item) {
         }
     }
     allItems.insertChild(index, group);
+    resizeGroupBoundary();
+    item.strokeColor = 'blue';
+    refreshMenu();
+}
+
+function resizeGroupBoundary() {
     if (!rect) {
         rect = new Path.Rectangle(group.bounds);
         rect.insertAbove(group);
@@ -297,7 +340,37 @@ function select(item) {
                rect.bounds.topLeft);
     rect.strokeColor = 'red';
     rect.selected = true;
-    item.strokeColor = 'blue';
+}
+
+function refreshMenu() {
+    console.log(group);
+    if (dialog) {
+        $('button[id^="menu"]').attr('disabled', 'disabled');
+        return;
+    }
+    if (!$('#add-text').hasClass('hidden')) {
+        if (group.children.length === 1 && group.children[0] === activeText) {
+            $('button[id^="menu"]').attr('disabled', 'disabled');
+            return;
+        } else {
+            $('#add-text').addClass('hidden');
+        }
+    }
+    $('#menu-btn-add-shape,#menu-btn-add-text').removeAttr('disabled');
+    if (!group.children.length) {
+        $('#menu-btn-group,#menu-btn-remove,#menu-btn-edit').attr('disabled', 'disabled');
+        $('#menu-btn-group').text('Group');
+    } else {
+        $('#menu-btn-remove,#menu-btn-edit').removeAttr('disabled');
+        var $btn = $('#menu-btn-group');
+        if (group.children.length === 1 && !group.children[0].sui_group) {
+            $btn.attr('disabled', 'disabled');
+            $btn.text('Group')
+        } else {
+            $btn.removeAttr('disabled');
+            $btn.text(group.children.length === 1 ? 'Ungroup' : 'Group');
+        }
+    }
 }
 
 function clearSelection() {
@@ -315,49 +388,20 @@ function clearSelection() {
     if (rect)
         rect.remove()
     rect = null;
+    refreshMenu();
 }
 
-var menuGroup;
-var menuIndex = 0;
-var MENU_WIDTH = 80;
-
-createMenu();
-function addToMenu(item) {
-    menuGroup.push(item);
-    item.sui_menu = true;
+function remove() {
+    group.removeChildren();
+    clearSelection();
 }
 
-function menuItem(content, offsetX, offsetY) {
-    var topY = menuIndex * MENU_WIDTH;
-    var bottomY = topY + MENU_WIDTH;
-    var bottomRight = new Point(MENU_WIDTH, bottomY);
-    var text = new PointText(new Point(offsetX, topY + offsetY));
-    text.fillColor = 'black';
-    text.content = content;
-    var rect = new Path.Rectangle(new Point(0, topY), bottomRight);
-    var line = new Path.Line(new Point(0, bottomY), bottomRight);
-    line.strokeColor = '#9999ff';
-    var menuItem = new Group([text, rect, line])
-    menuIndex += 1;
-    return menuItem;
-}
+// Prevent dragging to cause scrolling on touch devices
+document.body.addEventListener('touchmove', function(event){
+    event.preventDefault();
+}, false);
 
-function createMenu() {
-    var from = new Point(0, 0);
-    var to = new Point(MENU_WIDTH, view.size.height);
-    var path = new Path.Rectangle(from, to);
-    path.fillColor = '#ddddff';
-    path.strokeColor = '#9999ff';
-    menuGroup = new Layer([path,
-                           menuItem(' Group /\nUngroup', 10, 30),
-                           menuItem('Add Shape', 10, 40),
-                           menuItem('Edit Selected\n   Item(s)', 5, 30)]);
-    project.layers[0].activate();
-}
-
-// Defining this is an easy way to prevent dragging to cause scrolling on touch devices
-function onMouseDrag(event) {
-}
 //tool.onMouseDrag = onMouseDrag;
 //
 //}
+})();

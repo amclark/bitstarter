@@ -1,0 +1,95 @@
+/* Large desktop */
+@media (min-width: 980px) {
+  .linediv-l {
+    border-right: 1px white solid;
+  }
+  .linediv-r {
+    border-left: 1px white solid;
+  }
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+  .copy {
+    padding: 2.5% 5%;
+  }
+  .linediv-l {
+    border-bottom: 1px white solid;
+  }
+  .linediv-r {
+    border-top: 1px white solid;
+  }
+}
+
+/* All form factors */
+
+/* Main body and headings */
+body {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  padding-top: 60px;
+}
+.heading, .subheading {
+  font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+p.lead {
+  padding-top: 1.5%;
+  font-size: 24px;
+  line-height: 30px;
+}
+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+
+/* Video pitch and Action */
+.pitch {
+  padding: 2.5% 0%;
+}
+.order {
+  padding: 2% 0%;
+}
+.actions {
+  background-color: #343434;
+  padding: 3% 0%;
+}
+.video, .order, .social, .statistics {
+  text-align: center;
+}
+.statistics h3, .statistics p {
+  color: white;
+}
+
+.img-responsive {
+  padding:4px;
+  background-color:#fff;
+  border:1px solid #ccc;
+  border:1px solid rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow:0 1px 3px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow:0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow:0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Marketing Copy and Footer */
+.copy {
+  padding-top: 2.5%;
+  padding-bottom: 2.5%;
+  text-align: justify;
+}
+.asset {
+  padding: 2.5% 0%;
+}
+.footer {
+  color: #cccccc;
+  text-align: center;
+}
+.footer p {
+  font-size: 11px;
+}
+.footer a {
+  color: #ccccff;
+}
+div.addthis_toolbox {
+  width:180px;
+  margin: 0 auto;
+}

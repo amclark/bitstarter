@@ -4,15 +4,49 @@
     <meta charset="UTF-8">
     <title>Smooth UI</title>
     <link rel="stylesheet" href="css/style.css">
-    
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <script type="text/javascript" src="js/smoothui-deps.min.js"></script>
+    <script type="text/paperscript" src="js/smoothui.min.js" canvas="canvas"></script>
     <!--  - ->
     <script src="http://jsconsole.com/remote.js?AF5457FE-A3F5-47D3-853B-97F71D84C4E4"></script>
     <!- -  -->
-    <script type="text/javascript" src="js/paper.js"></script>
-    <script type="text/javascript" src="js/hammer.js"></script>
-    <script type="text/paperscript" src="js/smoothui.js" canvas="canvas"></script>
+    <style type="text/css">
+        .btn, .form-control {
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
-    <canvas id="canvas" resize="true"></canvas>
+    <div style="width: 100%; height: 100%;">
+        <div style="float: left; width: 200px; padding: 30px 10px;" align="center">
+            <button id="menu-btn-add-shape" type="button" class="btn btn-primary btn-large btn-block">Add Shape</button>
+            <button id="menu-btn-add-text" type="button" class="btn btn-primary btn-large btn-block">Add Text</button>
+            <div id="add-text" class="hidden">
+                <textarea id="text-form" class="form-control" rows="3"></textarea>
+                <button id="btn-add-text-done" class="btn btn-default">Done</button>
+            </div>
+            <button id="menu-btn-group" type="button" class="btn btn-primary btn-large btn-block" disabled="disabled">Group</button>
+            <button id="menu-btn-remove" type="button" class="btn btn-primary btn-large btn-block" disabled="disabled">Remove</button>
+            <button id="menu-btn-edit" type="button" class="btn btn-primary btn-large btn-block hidden">Edit Selection</button>
+            <div id="edit" class="hidden">
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="color" class="control-label col-sm-3 col-sm-offset-1">Color:</label>
+                        <div class="col-sm-6 col-sm-offset-1">
+                            <input type="color" class="form-control" id="input-color" value="black">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <button id="menu-btn-settings" type="button" class="btn btn-primary btn-large btn-block hidden" disabled="disabled">Settings</button>
+            <div id="settings" class="hidden">
+            </div>
+            <button id="btn-return" type="button" class="btn btn-large btn-block" onclick="location.href='/';">Return to SmoothUI.co</button>
+            <p style="text-align: justify;">Note: This application is still under development.  If you would like to help improve it please <a href="mailto:&#97;&#109;&#99;&#108;&#97;&#114;&#107;&#55;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">email the developer</a> with suggestions or info on bugs that you encounter, thanks!</p>
+        </div>
+        <div style="margin-left: 200px; border-left: 2px solid black;">
+            <canvas id="canvas" resize="true"></canvas>
+        </div>
+    </div>
 </body>
 </html>
