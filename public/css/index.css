@@ -56,7 +56,7 @@ p {
 .video, .order, .social, .statistics {
   text-align: center;
 }
-.statistics h3, .statistics p {
+.statistics h3, .statistics p, .funding-over {
   color: white;
 }
 
